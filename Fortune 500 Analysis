@@ -89,6 +89,11 @@ GROUP BY industry
 HAVING AVG(revenue) > 300
 ORDER BY avg_revenue DESC;
 
+# What is the distribution of employee benefits across companies, and how does this relate to average tenure and healthcare coverage?
+## Results - Companies offering comprehensive benefits (healthcare + longer maternity leave) may be more attractive to employees and retain them longer.
+            - Conversely, companies with poor benefits may struggle with turnover and talent attraction.
+            - The dataset shows few mid-tier offerings, indicating a stark divide in corporate benefit strategies.
+
 SELECT 
 CASE WHEN healthcare_benefits = 1
 AND maternity_leave_weeks >= 12 THEN "Exceptional"
