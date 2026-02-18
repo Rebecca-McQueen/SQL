@@ -116,3 +116,29 @@ ORDER BY
         WHEN 'Satisfactory' THEN 3
         WHEN 'Poor' THEN 4
 END;
+
+# Do companies with more PTO tend to have longer employee tenure, and does PTO correlate with other benefits like healthcare or maternity leave?
+## Results - Companies with exceptional benefits offer the most PTO, longest maternity leave, and healthcare, and their employees have slightly higher tenure. 
+            - PTO appears to be part of a broader package that supports retention and employee satisfaction, while companies with poor benefits offer minimal PTO and lack healthcare, potentially affecting turnover.
+
+SELECT
+    CASE 
+        WHEN healthcare_benefits = 1 AND maternity_leave_weeks >= 12 THEN 'Exceptional'
+        WHEN healthcare_benefits = 1 AND maternity_leave_weeks >= 8 THEN 'Good'
+        WHEN healthcare_benefits = 1 AND maternity_leave_weeks >= 6 THEN 'Satisfactory'
+        ELSE 'Poor'
+    END AS "Benefit Package Scale",
+    COUNT(*) AS num_companies,
+    ROUND(AVG(paid_time_off_days), 1) AS avg_pto_days,
+    ROUND(AVG(avg_employee_tenure), 1) AS avg_tenure,
+    ROUND(AVG(maternity_leave_weeks), 1) AS avg_maternity_leave,
+    ROUND(AVG(healthcare_benefits), 2) AS pct_with_healthcare
+FROM fortune_companies
+GROUP BY "Benefit Package Scale"
+ORDER BY
+    CASE "Benefit Package Scale"
+        WHEN 'Exceptional' THEN 1
+        WHEN 'Good' THEN 2
+        WHEN 'Satisfactory' THEN 3
+        WHEN 'Poor' THEN 4
+END;
