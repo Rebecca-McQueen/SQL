@@ -63,16 +63,16 @@ VALUES
             - Top benefit companies are not always the highest revenue, suggesting benefit generosity is sometimes strategic rather than purely based on size.
             - The query effectively surfaces companies that stand out in either healthcare or maternity leave, highlighting potential leaders in employee benefits.
 
-
 SELECT company_name, revenue, healthcare_benefits, maternity_leave_weeks
 FROM fortune_companies
 WHERE healthcare_benefits = 1
 OR maternity_leave_weeks > 10
 ORDER BY maternity_leave_weeks DESC;
 
-SELECT *
-FROM fortune_companies
-ORDER BY revenue DESC;
+# Which companies generate the most revenue per employee, and how do they compare by industry, total revenue, and employee count?
+## Results - Mid-size Technology and Healthcare companies generate the highest revenue per employee, highlighting workforce efficiency. 
+            - Large corporations like Amazon, Walmart, and Apple have huge total revenue but much lower revenue per employee due to their massive workforces. 
+            - Although revenue per employee is a useful productivity metric, higher expenses in Tech and Healthcare mean rankings could shift when considering profits
 
 SELECT *
 FROM fortune_companies
