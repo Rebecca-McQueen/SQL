@@ -74,20 +74,19 @@ ORDER BY maternity_leave_weeks DESC;
             - Large corporations like Amazon, Walmart, and Apple have huge total revenue but much lower revenue per employee due to their massive workforces. 
             - Although revenue per employee is a useful productivity metric, higher expenses in Tech and Healthcare mean rankings could shift when considering profits
 
-SELECT *
-FROM fortune_companies
-WHERE Revenue >=360 
-ORDER BY revenue DESC;
-
 SELECT company_name, industry, revenue, employees,
 ROUND((revenue / employees)*1000000,1) AS revenue_per_employee
 FROM fortune_companies
 ORDER BY revenue_per_employee DESC;
 
+# Which industries have an average company revenue greater than $300 million, and how do they rank by average revenue?
+## Results - Technology and Manufacturing are the only industries where the average company revenue exceeds $300 million, with Technology slightly ahead. 
+            - This highlights that the largest companies, in terms of revenue, are concentrated in these sectors.
+
 SELECT industry, ROUND(AVG(revenue), 1) AS avg_revenue
 FROM fortune_companies
 GROUP BY industry
-HAVING AVG(revenue) > 0
+HAVING AVG(revenue) > 300
 ORDER BY avg_revenue DESC;
 
 SELECT 
