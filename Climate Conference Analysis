@@ -1,0 +1,158 @@
+ CREATE TABLE vips (
+2
+     member_id INTEGER PRIMARY KEY
+3
+   , last_name TEXT
+4
+   , first_name TEXT
+5
+   , event INTEGER
+6
+   , provides_feedback_to INTEGER
+7
+   , association TEXT
+8
+   , assoc_type TEXT
+9
+   , member_since INTEGER
+10
+   );
+11
+   
+12
+CREATE TABLE reservations ( 
+13
+    member_id INTEGER
+14
+  , hotel INTEGER
+15
+  , welcome_rsvp BIT
+16
+  , dinner_rsvp BIT
+17
+  );
+18
+ 
+19
+ 
+20
+CREATE TABLE events (
+21
+    event_id INTEGER PRIMARY KEY
+22
+  , event_name TEXT
+23
+  , event_type TEXT
+24
+  );
+25
+  
+26
+​
+27
+CREATE TABLE hotels (
+28
+    hotel_id INTEGER PRIMARY KEY
+29
+  , hotel_name TEXT
+30
+  , address TEXT
+31
+  );
+
+
+--Instructions:Write at least 6 different queries. Do each of the following at least once:LEFT JOIN, INNER JOIN, Multiple JOINs in one query, Either: a) query with a subquery b) SELF JOIN. Then, write two queries of your choice.
+
+SELECT *
+FROM vips;
+
+SELECT *
+FROM reservations;
+
+SELECT *
+FROM events;
+
+SELECT *
+FROM hotels;
+
+-- Show which member is staying in which hotel (include hotel name, hotel address, first name, last name). Include vips who have not ade a reservation.
+
+SELECT vips.first_name,
+vips.last_name,
+hotels.hotel_name
+FROM vips
+LEFT JOIN reservations
+ON vips.member_id = reservations.member_id
+LEFT JOIN hotels
+ON hotels.hotel_id = reservations.hotel
+ORDER BY last_name ASC;
+
+-- Show which events each member is presenting at and show which memeber and event that member has been assigned to review (include, first name, last name, event names).
+
+
+SELECT reviewer.first_name AS reviewer_first_name,
+    reviewer.last_name AS reviewer_last_name,
+    e1.event_name AS reviewer_event,
+    
+    reviewee.first_name AS reviewee_first_name,
+    reviewee.last_name AS reviewee_last_name,
+    e2.event_name AS reviewee_event
+
+	FROM vips AS reviewer
+
+		LEFT JOIN vips AS reviewee
+    ON reviewer.provides_feedback_to = reviewee.member_id
+
+		LEFT JOIN events AS e1
+    ON reviewer.event = e1.event_id
+
+		LEFT JOIN events AS e2
+    ON reviewee.event = e2.event_id;
+
+-- Create a table showing a register of VIPs attending the welcome party (include full names, association and membership join date).
+
+SELECT vips.first_name,
+vips.last_name,
+vips.member_since,
+vips.association
+FROM vips
+INNER JOIN reservations 
+ON reservations.member_id = vips.member_id
+WHERE reservations.welcome_rsvp = 1
+ORDER BY last_name ASC;
+
+
+-- Create a query that returns all VIPs attending the thank-you dinner, including their full name and association. Add a column to indicate whether each member’s length of membership is greater than the average membership length of all VIPs to identify "Exclusive Members".
+
+SELECT vips.first_name,
+vips.last_name,
+vips.association,
+CASE WHEN (2026 - vips.member_since) >
+(SELECT AVG(2026 - member_since)
+FROM vips)
+THEN 'Yes'
+ELSE 'No'
+END AS Exclusive_member
+FROM vips
+INNER JOIN reservations 
+ON reservations.member_id = vips.member_id
+WHERE reservations.dinner_rsvp = 1
+ORDER BY last_name ASC;
+
+-- Get a list of all government-affiliated VIPs who have RSVP’d for dinner.
+
+SELECT vips.first_name,
+vips.last_name
+FROM vips
+LEFT JOIN reservations 
+ON reservations.member_id = vips.member_id
+WHERE reservations.dinner_rsvp = 1
+AND vips.assoc_type = "government"
+ORDER BY last_name ASC;
+
+-- Categorise the number of vips who are associated with each association type.
+
+SELECT assoc_type,
+COUNT(member_id) AS num_vips
+FROM vips
+GROUP BY assoc_type;
