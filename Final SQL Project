@@ -1,0 +1,168 @@
+--In this project, I worked with a large relational dataset representing a digital media store. The database included multiple interconnected tables such as artists, albums, media tracks, invoices, customers, and employees. By examining how these tables relate to one another, I developed a strong understanding of relational database structures.
+
+--I used a variety of SQL queries to answer key business questions. These included identifying customers outside the US, analysing regional data such as customers from Brazil, and linking customer information to invoices to track purchasing activity. I also explored employee data by identifying sales agents and evaluating their performance.
+
+--More advanced queries involved joining multiple tables to generate insights, such as showing invoice totals alongside customer details and sales agent names, retrieving track and artist information for each purchase, and listing detailed metadata like album, genre, and media type. I also performed time-based analysis, including calculating the number of invoices and total sales for a specific year (2009).
+
+--Additionally, I created queries to evaluate business performance, such as calculating total sales by each sales agent and determining which agent generated the highest revenue in 2009. Beyond answering predefined questions, I also developed my own queries to uncover further patterns and insights within the dataset.
+
+--Overall, this project strengthened my ability to write complex SQL queries, work with multi-table joins, and extract meaningful insights from large datasets.
+
+--Show Customers (their full names, customer ID, and country) who are not in the US.
+SELECT customerid,
+firstname,
+lastname,
+country
+FROM customers 
+WHERE country <> 'USA';
+
+--Show only the Customers from Brazil.
+SELECT customerid,
+firstname,
+lastname
+FROM customers 
+WHERE country = 'Brazil';
+
+--Find the Invoices of customers who are from Brazil. The resulting table should show the customer's full name, Invoice ID, Date of the invoice, and billing country.
+SELECT customers.FirstName,
+customers.LastName,
+invoices.InvoiceId,
+invoices.InvoiceDate,
+invoices.BillingCountry
+FROM customers
+LEFT JOIN invoices
+ON invoices.CustomerId = customers.CustomerId
+WHERE customers.country = 'Brazil';
+
+--Show the Employees who are Sales Agents.
+SELECT * FROM chinook.Employees
+WHERE Title = "Sales Support Agent" ;
+
+--Find a unique/distinct list of billing countries from the Invoice table.
+SELECT DISTINCT billingcountry
+FROM invoices;
+
+--Provide a query that shows the invoices associated with each sales agent. The resulting table should include the Sales Agent's full name.S
+SELECT employees.FirstName,
+employees.LastName,
+invoices.InvoiceId
+FROM employees
+INNER JOIN customers
+ON customers.SupportRepId = employees.EmployeeId
+INNER JOIN invoices 
+ON invoices.CustomerId = customers.CustomerId;
+
+--Show the Invoice Total, Customer name, Country, and Sales Agent name for all invoices and customers.
+SELECT employees.FirstName AS Employee_FirstName,
+employees.LastName AS Employee_LastName,
+customers.FirstName AS Customer_FirstName,
+customers.LastName AS Customer_LastName,
+customers.country,
+invoices.Total
+FROM employees
+INNER JOIN customers
+ON customers.SupportRepId = employees.EmployeeId
+INNER JOIN invoices
+ON invoices.CustomerId = customers.CustomerId;
+
+--How many Invoices were there in 2009?
+SELECT COUNT(*)
+FROM Invoices
+WHERE InvoiceDate BETWEEN '2009-01-01' AND '2009-12-31';
+
+--What are the total sales for 2009?
+SELECT SUM(total)
+FROM Invoices
+WHERE InvoiceDate BETWEEN '2009-01-01' AND '2009-12-31';
+
+--Write a query that includes the purchased track name with each invoice line ID.
+SELECT tracks.Name, 
+invoice_items.InvoiceLineId
+FROM Invoice_items 
+INNER JOIN Tracks 
+ON invoice_items.TrackId = tracks.TrackId;
+
+--Write a query that includes the purchased track name AND artist name with each invoice line ID.
+SELECT tracks.Name  AS Track, 
+invoice_items.InvoiceLineId,
+artists.Name AS Artist
+FROM Invoice_items 
+LEFT JOIN Tracks 
+ON invoice_items.TrackId = tracks.TrackId
+INNER JOIN albums
+ON albums.AlbumId = tracks.AlbumId
+LEFT JOIN artists
+ON artists.ArtistId = Albums.AlbumId;
+
+--Provide a query that shows all the Tracks, and include the Album name, Media type, and Genre.
+SELECT tracks.name AS Track,
+albums.Title AS Album,
+media_types.Name AS Media,
+genres.Name AS Genre
+FROM tracks
+INNER JOIN genres
+ON tracks.GenreId = genres.GenreId
+INNER JOIN media_types
+ON media_types.MediaTypeId = tracks.MediaTypeId
+INNER JOIN Albums 
+ON albums.AlbumId = tracks.AlbumId;
+
+--Show the total sales made by each sales agent.
+SELECT employees.firstname,
+employees.LastName,
+ROUND(SUM(invoices.Total), 2) AS 'Total Sales'
+FROM employees
+INNER JOIN customers
+ON customers.SupportRepId = employees.EmployeeId
+INNER JOIN invoices
+ON invoices.CustomerId = customers.CustomerId
+WHERE employees.Title = 'Sales Support Agent'
+GROUP BY employees.FirstName;
+
+--Which sales agent made the most dollars in sales in 2009?
+SELECT employees.firstname,
+employees.LastName,
+ROUND(SUM(invoices.Total), 2) AS 'Total Sales'
+FROM employees
+INNER JOIN customers
+ON customers.SupportRepId = employees.EmployeeId
+INNER JOIN invoices
+ON invoices.CustomerId = customers.CustomerId
+WHERE employees.Title = 'Sales Support Agent'
+GROUP BY employees.FirstName
+ORDER BY (round(sum(Invoices.Total),2)) DESC LIMIT 1;
+
+--What is the average amount spent per customer?
+SELECT AVG(TotalSpent) AS AvgSpendPerCustomer
+FROM
+(SELECT Customers.CustomerId,
+Customers.FirstName,
+Customers.LastName,
+SUM(Invoices.Total) AS TotalSpent
+FROM customers
+Inner JOIN invoices
+ON Invoices.CustomerId = customers.CustomerId
+GROUP BY Customers.CustomerId
+ORDER BY TotalSpent DESC);
+
+--What is the most popular media type?
+SELECT media_types.Name AS MediaType,
+COUNT(invoice_items.InvoiceLineId) AS PurchaseCount
+FROM invoice_items
+INNER JOIN tracks 
+ON invoice_items.TrackId = tracks.TrackId
+INNER JOIN media_types
+ON media_types.MediaTypeId = tracks.MediaTypeId
+GROUP BY Media_types.Name
+ORDER BY PurchaseCount DESC
+LIMIT 1;
+
+--What are the top-selling tracks of all time?
+SELECT tracks.Name,
+COUNT(invoice_items.InvoiceLineId) AS TimesPurchased
+FROM invoice_items
+INNER JOIN tracks 
+On invoice_items.TrackId = tracks.TrackId
+GROUP BY tracks.TrackId
+ORDER BY TimesPurchased DESC
+LIMIT 10;
